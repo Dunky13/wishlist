@@ -14,6 +14,8 @@ on:
 
 jobs:
   build_and_push_web:
+    # Only upstream owns the configured publication destinations.
+    if: github.repository == 'cmintey/wishlist'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

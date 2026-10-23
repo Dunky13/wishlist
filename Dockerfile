@@ -9,13 +9,16 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential python3 openssl git \
     && rm -rf /var/lib/apt/lists/*
 
-# Build flags for compatibility on older systems
-ENV RUSTFLAGS="-C target-cpu=x86-64 -C target-feature=-sse4.1,-sse4.2,-avx,-avx2"
-ENV CFLAGS="-march=x86-64 -mtune=generic"
-ENV CXXFLAGS="-march=x86-64 -mtune=generic"
+ARG TARGETARCH
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+# Preserve older x86 CPU compatibility without passing x86 flags to ARM compilers.
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        export RUSTFLAGS="-C target-cpu=x86-64 -C target-feature=-sse4.1,-sse4.2,-avx,-avx2" \
+            CFLAGS="-march=x86-64 -mtune=generic" \
+            CXXFLAGS="-march=x86-64 -mtune=generic"; \
+    fi \
+    && pnpm install --frozen-lockfile
 COPY prisma/ ./prisma/
 RUN pnpm prisma generate
 COPY src/ ./src

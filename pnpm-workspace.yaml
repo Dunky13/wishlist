@@ -9,3 +9,6 @@ supportedArchitectures:
     cpu:
         - x64
         - arm64
+
+overrides:
+    "@metascraper/helpers>re2": 1.27.0
